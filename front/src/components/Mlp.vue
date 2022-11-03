@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="container">
     <h2>Inteligencia Artificial - Redes Neurais</h2>
 
-    <div class="container--custom">
+    <div class="">
       <form class="row border rounded p-1 form--bg">
         <div class="col-4">
           <div class="row mt-2">
@@ -30,7 +30,12 @@
           <div class="row mt-2">
             <label class="col-4">Camada O: </label>
             <div class="col-4">
-              <input v-model="camadaO" class="form-control" />
+              <input
+                v-model="camadaO"
+                :disabled="block"
+                :class="{ disabled: block }"
+                class="form-control"
+              />
             </div>
           </div>
         </div>
@@ -39,21 +44,36 @@
           <div class="row mt-2">
             <label class="col-4">Erro: </label>
             <div class="col-4">
-              <input class="form-control" v-model="erro" />
+              <input
+                class="form-control"
+                v-model="erro"
+                :disabled="block"
+                :class="{ disabled: block }"
+              />
             </div>
           </div>
 
           <div class="row mt-2">
             <label class="col-4">Iterações: </label>
             <div class="col-4">
-              <input class="form-control" v-model="iteracoes" />
+              <input
+                class="form-control"
+                v-model="iteracoes"
+                :disabled="block"
+                :class="{ disabled: block }"
+              />
             </div>
           </div>
 
           <div class="row mt-2">
             <label class="col-4">N: </label>
             <div class="col-4">
-              <input class="form-control" v-model="n" />
+              <input
+                class="form-control"
+                v-model="n"
+                :disabled="block"
+                :class="{ disabled: block }"
+              />
             </div>
           </div>
         </div>
@@ -62,7 +82,13 @@
           <div class="row mt-2">
             <label for="funcao" class="col-4">Funcao de Transferencia</label>
             <div class="col-4">
-              <select v-model="funcao" class="form-control" id="funcao">
+              <select
+                v-model="funcao"
+                class="form-control"
+                :disabled="block"
+                :class="{ disabled: block }"
+                id="funcao"
+              >
                 <option value="1">hiperbolica</option>
                 <option value="2">linear</option>
               </select>
@@ -76,39 +102,94 @@
             accept=".csv"
             type="file"
             id="formFile"
-            @change="onFileChange"
+            v-if="!block"
+            @change="onFileChange($event, 'training')"
           />
         </div>
       </form>
 
-      <div class="mt-4 overflow-auto csv--table">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col">x1</th>
-              <th scope="col">x2</th>
-              <th scope="col">x3</th>
-              <th scope="col">x4</th>
-              <th scope="col">x5</th>
-              <th scope="col">x6</th>
-              <th scope="col">Classe</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(line, index) in this.csv" :key="index">
-              <th scope="row">{{ line[0] }}</th>
-              <th scope="row">{{ line[1] }}</th>
-              <th scope="row">{{ line[2] }}</th>
-              <th scope="row">{{ line[3] }}</th>
-              <th scope="row">{{ line[4] }}</th>
-              <th scope="row">{{ line[5] }}</th>
-              <th scope="row">{{ line[6] }}</th>
-            </tr>
-          </tbody>
-        </table>
+      <div class="mt-4 overflow-auto csv--content rounded p-2">
+        <div class="overflow-auto csv--table mb-4">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">x1</th>
+                <th scope="col">x2</th>
+                <th scope="col">x3</th>
+                <th scope="col">x4</th>
+                <th scope="col">x5</th>
+                <th scope="col">x6</th>
+                <th scope="col">Classe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(line, index) in this.csvTraining" :key="index">
+                <th scope="row">{{ line[0] }}</th>
+                <th scope="row">{{ line[1] }}</th>
+                <th scope="row">{{ line[2] }}</th>
+                <th scope="row">{{ line[3] }}</th>
+                <th scope="row">{{ line[4] }}</th>
+                <th scope="row">{{ line[5] }}</th>
+                <th scope="row">{{ line[6] }}</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="btn-size mt-2">
+          <button @click="trainMlpAlgorithm" class="btn btn-dark w-100">
+            Treinar
+          </button>
+        </div>
       </div>
 
-      <div class="container--chart">
+      <div class="mt-4 csv--content rounded p-2">
+        <div class="col-5 my-2">
+          <input
+            class="form-control"
+            accept=".csv"
+            type="file"
+            id="formFile"
+            v-if="block"
+            @change="onFileChange($event, 'test')"
+          />
+        </div>
+
+        <div class="overflow-auto csv--table mb-4">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">x1</th>
+                <th scope="col">x2</th>
+                <th scope="col">x3</th>
+                <th scope="col">x4</th>
+                <th scope="col">x5</th>
+                <th scope="col">x6</th>
+                <th scope="col">Classe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(line, index) in this.csvTest" :key="index">
+                <th scope="row">{{ line[0] }}</th>
+                <th scope="row">{{ line[1] }}</th>
+                <th scope="row">{{ line[2] }}</th>
+                <th scope="row">{{ line[3] }}</th>
+                <th scope="row">{{ line[4] }}</th>
+                <th scope="row">{{ line[5] }}</th>
+                <th scope="row">{{ line[6] }}</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="btn-size mt-2">
+          <button @click="testMlpAlgorithm" class="btn btn-dark w-100">
+            Testar
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 container--chart rounded p-4">
         <LineChart />
       </div>
     </div>
@@ -132,12 +213,14 @@ export default {
       erro: 0.00001,
       iteracoes: 2000,
       n: 0.2,
-      csv: [],
+      csvTraining: [],
+      csvTest: [],
+      block: false,
     };
   },
 
   methods: {
-    onFileChange(e) {
+    onFileChange(e, fileName) {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.readAsText(file);
@@ -145,7 +228,12 @@ export default {
       reader.onload = (e) => {
         let csv = e.target.result;
         const csvArray = this.generateArrayCSV(csv);
-        this.csv = csvArray;
+
+        if (fileName === "training") {
+          this.csvTraining = csvArray;
+        } else {
+          this.csvTest = csvArray;
+        }
       };
     },
     generateArrayCSV(file) {
@@ -168,6 +256,17 @@ export default {
       console.log(csvData);
       return csvData;
     },
+    trainMlpAlgorithm() {
+      if (this.csvTraining.length > 0) {
+        this.block = true;
+        alert("treinando");
+      } else {
+        alert("vazio");
+      }
+    },
+    testMlpAlgorithm() {
+      alert("teste");
+    },
   },
 };
 </script>
@@ -175,11 +274,6 @@ export default {
 <style scoped>
 .disabled {
   background: rgb(201, 207, 211);
-}
-.container--custom {
-  width: 85%;
-  margin: 0 auto;
-  color: rgb(48, 49, 61);
 }
 
 .form--bg {
@@ -191,10 +285,20 @@ export default {
   background: #ffffff;
 }
 
+.csv--content {
+  max-height: 620px;
+  min-height: 620px;
+  background: #ffffff;
+}
+
 .csv--table {
   overflow: auto;
   max-height: 480px;
   min-height: 480px;
-  background: #ffffff;
+}
+
+.btn-size {
+  width: 50%;
+  margin: 0 auto;
 }
 </style>

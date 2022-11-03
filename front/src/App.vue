@@ -18,13 +18,12 @@ export default {
 <style>
 body {
   margin-top: 60px;
-  background: #22273b;
-  color: white;
+  background: #f2f2f2;
   background-image: ("./assets/deep.png");
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
