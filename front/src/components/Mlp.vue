@@ -81,38 +81,31 @@
         </div>
       </form>
 
-      <div class="mt-4">
-        <table class="table table-dark">
+      <div class="mt-4 overflow-auto csv--table">
+        <table class="table table-striped">
           <thead>
             <tr>
-              <th scope="col">#</th>
-              <th scope="col">First</th>
-              <th scope="col">Last</th>
-              <th scope="col">Handle</th>
+              <th scope="col">x1</th>
+              <th scope="col">x2</th>
+              <th scope="col">x3</th>
+              <th scope="col">x4</th>
+              <th scope="col">x5</th>
+              <th scope="col">x6</th>
+              <th scope="col">Classe</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">1</th>
-              <td>Mark</td>
-              <td>Otto</td>
-              <td>@mdo</td>
-            </tr>
-            <tr>
-              <th scope="row">2</th>
-              <td>Jacob</td>
-              <td>Thornton</td>
-              <td>@fat</td>
-            </tr>
-            <tr>
-              <th scope="row">3</th>
-              <td>Larry</td>
-              <td>the Bird</td>
-              <td>@twitter</td>
+            <tr v-for="(line, index) in this.csv" :key="index">
+              <th scope="row">{{ line[0] }}</th>
+              <th scope="row">{{ line[1] }}</th>
+              <th scope="row">{{ line[2] }}</th>
+              <th scope="row">{{ line[3] }}</th>
+              <th scope="row">{{ line[4] }}</th>
+              <th scope="row">{{ line[5] }}</th>
+              <th scope="row">{{ line[6] }}</th>
             </tr>
           </tbody>
         </table>
-        {{ csv }}
       </div>
 
       <div class="container--chart">
@@ -139,13 +132,41 @@ export default {
       erro: 0.00001,
       iteracoes: 2000,
       n: 0.2,
-      csv: null,
+      csv: [],
     };
   },
 
   methods: {
     onFileChange(e) {
-      const csvForm = document.querySelector("#formFile");
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsText(file);
+
+      reader.onload = (e) => {
+        let csv = e.target.result;
+        const csvArray = this.generateArrayCSV(csv);
+        this.csv = csvArray;
+      };
+    },
+    generateArrayCSV(file) {
+      const csv = file.replace(/\r/g, ""); //Serve para o \r que tem em string no js
+      const lines = csv.split("\n");
+      let csvData = [];
+
+      lines.forEach((line, index) => {
+        if (index > 0) {
+          let row = line.split(",");
+          for (let i = 0; i < row.length - 1; i++) {
+            row[i] = parseFloat(row[i]);
+          }
+          if (row.length > 1) {
+            csvData.push(row);
+          }
+        }
+      });
+
+      console.log(csvData);
+      return csvData;
     },
   },
 };
@@ -167,6 +188,13 @@ export default {
 
 .container--chart {
   margin: 1rem 0;
+  background: #ffffff;
+}
+
+.csv--table {
+  overflow: auto;
+  max-height: 480px;
+  min-height: 480px;
   background: #ffffff;
 }
 </style>
