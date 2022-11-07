@@ -66,11 +66,14 @@
           </div>
 
           <div class="row mt-2">
-            <label class="col-4">N: </label>
+            <label class="col-4">Taxa de aprendizado: </label>
             <div class="col-4">
               <input
                 class="form-control"
-                v-model="n"
+                v-model="txAprendizado"
+                type="number"
+                min="0"
+                max="1"
                 :disabled="block"
                 :class="{ disabled: block }"
               />
@@ -89,9 +92,26 @@
                 :class="{ disabled: block }"
                 id="funcao"
               >
-                <option value="1">hiperbolica</option>
-                <option value="2">linear</option>
+                <option value="1">Hiperbolica</option>
+                <option value="2">Linear</option>
+                <option value="3">Tam hiperbolica</option>
               </select>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <label for="funcao" class="col-4">Classes de Treinamento </label>
+            <div class="d-flex col-6">
+              <div v-for="(testCLass, index) in headerClass" :key="index">
+                <label class="form-check-label" for="flexCheckIndeterminate">
+                  {{ testCLass }}
+                </label>
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  id="flexCheckIndeterminate"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -206,13 +226,15 @@ export default {
   },
   data() {
     return {
+      headerClass: [],
+      // headerClass: ["x1", "x3", "x3", "x4", "x5", "x6"],
       funcao: 1,
       camadaE: 6,
       camadaS: 5,
       camadaO: 1,
       erro: 0.00001,
       iteracoes: 2000,
-      n: 0.2,
+      txAprendizado: 0.2,
       csvTraining: [],
       csvTest: [],
       block: false,
@@ -250,6 +272,10 @@ export default {
           if (row.length > 1) {
             csvData.push(row);
           }
+        } else {
+          let row = line.split(",");
+          // for(let i = 0: i< row.length; i++)
+          this.headerClass.push(row[0]);
         }
       });
 
