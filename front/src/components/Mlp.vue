@@ -133,12 +133,13 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">x1</th>
-                <th scope="col">x2</th>
-                <th scope="col">x3</th>
-                <th scope="col">x4</th>
-                <th scope="col">x5</th>
-                <th scope="col">x6</th>
+                <th
+                  v-for="(hclass, index) in this.headerClass"
+                  :key="index"
+                  scope="col"
+                >
+                  {{ hclass }}
+                </th>
                 <th scope="col">Classe</th>
               </tr>
             </thead>
@@ -179,12 +180,13 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">x1</th>
-                <th scope="col">x2</th>
-                <th scope="col">x3</th>
-                <th scope="col">x4</th>
-                <th scope="col">x5</th>
-                <th scope="col">x6</th>
+                <th
+                  v-for="(hclass, index) in this.headerClass"
+                  :key="index"
+                  scope="col"
+                >
+                  {{ hclass }}
+                </th>
                 <th scope="col">Classe</th>
               </tr>
             </thead>
@@ -274,8 +276,9 @@ export default {
           }
         } else {
           let row = line.split(",");
-          // for(let i = 0: i< row.length; i++)
-          this.headerClass.push(row[0]);
+          for (let i = 0; i < row.length - 1; i++) {
+            this.headerClass.push(row[i]);
+          }
         }
       });
 
