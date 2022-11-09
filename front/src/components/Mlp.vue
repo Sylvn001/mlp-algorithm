@@ -47,6 +47,7 @@
               <input
                 class="form-control"
                 v-model="erro"
+                type="number"
                 :disabled="block"
                 :class="{ disabled: block }"
               />
@@ -241,6 +242,17 @@ export default {
       csvTest: [],
       block: false,
     };
+  },
+  watch: {
+    txAprendizado() {
+      this.txAprendizado = parseFloat(this.txAprendizado);
+    },
+    erro() {
+      this.erro = parseFloat(this.erro);
+    },
+    iteracoes() {
+      this.iteracoes = parseInt(this.iteracoes);
+    },
   },
 
   methods: {
