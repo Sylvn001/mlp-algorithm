@@ -47,6 +47,8 @@
               <input
                 class="form-control"
                 v-model="erro"
+                min="0"
+                max="1"
                 type="number"
                 :disabled="block"
                 :class="{ disabled: block }"
@@ -58,6 +60,7 @@
             <label class="col-4">Iterações: </label>
             <div class="col-4">
               <input
+                type="number"
                 class="form-control"
                 v-model="iteracoes"
                 :disabled="block"
@@ -250,7 +253,7 @@ export default {
     erro() {
       this.erro = parseFloat(this.erro);
     },
-    iteracoes() {
+    iteracoes(value) {
       this.iteracoes = parseInt(this.iteracoes);
     },
   },
