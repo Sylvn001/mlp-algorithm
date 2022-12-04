@@ -358,6 +358,35 @@ export default {
         this.normalized[pos][1]
       );
     },
+    aplicaDerivada(valor, net)
+    {
+      
+      if(this.funcao == 1)
+      {
+        return valor * 0.1;
+      }
+      if(this.funcao == 2)
+      {
+        return valor * (net * ( 1-net));
+      }
+      if(this.funcao == 3)
+      {
+        return valor * (1 - Math.pow(net, 2));
+      }
+    },
+    aplicaFT(net)
+    {
+      if (this.funcao == 1) {
+        return net / 10;
+      }
+      if (this.funcao == 2) {
+        return 1 / (1 + Math.exp(-net));
+      }
+      if(this.funcao == 3)
+      {
+        return Math.tanh(net);
+      }
+    },
     trainMlpAlgorithm() {
       let pesoEtoO = [];
       let pesoOtoS = [];
@@ -376,6 +405,8 @@ export default {
           pesoOtoS[i][j] = peso;
         }
       }
+
+      console.log(pesoEtoO, pesoOtoS);
       if (this.csvTraining.length > 0) {
         this.normalize();
         this.block = true;
@@ -411,6 +442,8 @@ export default {
                 }
               }
             }
+
+
             for (let j = 0; j < this.headerClass.length; j++) {
               ErroRede = 0;
               ErroS = [];
@@ -422,82 +455,57 @@ export default {
               for (let k = 0; k < this.camadaO; k++) {
                 net.push(0);
                 for (let l = 0; l < this.camadaE; l++) {
-                  net[k] += this.retornaValorNomalizado(this.csvTraining[i][j], j) *
-                    pesoEtoO[l][k];
+                  net[k] += this.retornaValorNomalizado(this.csvTraining[i][j], j) * parseFloat(pesoEtoO[l][k]);
                 }
-                if (this.funcao == 1) {
-                  IC[k] = net[k] / 10;
-                } else {
-                  if (this.funcao == 2) {
-                    IC[k] =
-                      1 /
-                      (1 +
-                        Math.pow(
-                          this.retornaValorNomalizado(
-                            this.csvTraining[i][j],
-                            j
-                          ),
-                          net[k]
-                        ));
-                  }
-                  // else{
-
-                  // }
-                }
+                
+                IC.push(this.aplicaFT(net[k]));
+                
               }
-
-              /////////////////////////////////////////////////////////////////////////////////////////
+              console.log("NET: ", net)
+              console.log("IC: ", IC)
               ErroRede = 0;
+              
               for (let k = 0; k < this.camadaS; k++) {
-                netS[k] = 0;
+                netS.push(0);
                 for (let l = 0; l < this.camadaO; l++) {
                   netS[k] += IC[l] * parseFloat(pesoOtoS[l][k]);
                 }
-                if (this.funcao == 1) {
-                  IG.push(netS[k] / 10);
-                } else {
-                  if (this.funcao == 2) {
-                    IG[k] =
-                      1 /
-                      (1 +
-                        Math.pow(
-                          this.retornaValorNomalizado(
-                            this.csvTraining[i][j],
-                            j
-                          ),
-                          netS[k]
-                        ));
-                  }
-                }
 
-                ErroS[k] = (saidas[k] - IG[k]) * 0.1;
+                IG.push(this.aplicaFT(netS[k]));
+                
+                ErroS[k] = this.aplicaDerivada(saidas[k] - IG[k], netS[k]);
+                
+
                 ErroRede = ErroRede + Math.pow((saidas[k]- IG[k]), 2);
               }
+              console.log("NetS: ", netS)
+              console.log("IG: ", IG)
+              console.log("ErroS: ", ErroS)
               ErroRede = ErroRede * 0.5;
+              console.log("Erro Rede: ", ErroRede);
+
               for (let pos = 0; pos < this.camadaO; pos++) {
                 Erro.push(0);
                 for (let k = 0; k < this.camadaS; k++) {
                   Erro[pos] =
                     Erro[pos] + ErroS[k] * parseFloat(pesoOtoS[pos][k]);
                 }
-                Erro[pos] = Erro[pos] * 0.1;
+                Erro[pos] = this.aplicaDerivada(Erro[pos], net[pos]);
+                
               }
+              console.log("Erro: ", Erro)
 
               for (let l = 0; l < this.camadaS; l++) {
                 for (let k = 0; k < this.camadaO; k++) {
-                  console.log(pesoOtoS[k][l], this.txAprendizado, ErroS[l], IC[k]);
-                  let calc = parseFloat(pesoOtoS[k][l]) +
-                    parseFloat(this.txAprendizado * ErroS[l] * IC[k]);
-                  pesoOtoS[k][l] = calc;
+                  let novoPeso = parseFloat(pesoOtoS[k][l]) + parseFloat(this.txAprendizado * ErroS[l] * IC[k]);
+                  pesoOtoS[k][l] = novoPeso
                 }
               }
 
               for (let l = 0; l < this.camadaO; l++) {
                 for (let k = 0; k < this.camadaE; k++) {
-                  pesoEtoO[k][l] = parseFloat(pesoEtoO[k][l]) +
-                    parseFloat(
-                      this.txAprendizado * Erro[l] * this.csvTraining[i][j]
-                    );
+                  let novoPeso = parseFloat(pesoEtoO[k][l]) + parseFloat(this.txAprendizado * Erro[l] * this.retornaValorNomalizado(this.csvTraining[i][j], j));
+                  pesoEtoO[k][l] = novoPeso;
                 }
               }
             }
@@ -511,7 +519,6 @@ export default {
       }
       this.pesoOtoS = pesoOtoS;
       this.pesoEtoO = pesoEtoO;
-      console.log(this.pesoEtoO, this.pesoOtoS);
     },
     criaMatriz(){
       let matriz = []
