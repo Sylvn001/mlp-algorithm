@@ -218,6 +218,24 @@
       <div class="mt-4 container--chart rounded p-4">
         <LineChart />
       </div>
+
+      <!-- Confusion matriz -->
+      <div class="container--mat">
+        <table class="table">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col"></th>
+              <th v-for="classInfo in classValues" :key="classInfo" scope="col">
+                {{ classInfo }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- End of confusion -->
     </div>
   </div>
 </template>
@@ -242,7 +260,8 @@ export default {
       iteracoes: 2,
       txAprendizado: 0.2,
       csvTraining: [],
-      class: [],
+      classValues: [],
+      // classValues: ["CA", "CB", "CC", "CD", "CE"],
       csvTest: [],
       pesoEtoO: [],
       pesoOtoS: [],
@@ -270,7 +289,7 @@ export default {
 
       reader.onload = (e) => {
         let csv = e.target.result;
-        const csvArray = this.generateArrayCSV(csv);
+        const csvArray = this.generateArrayCSV(csv, fileName);
 
         if (fileName === "training") {
           this.csvTraining = csvArray;
@@ -279,7 +298,7 @@ export default {
         }
       };
     },
-    generateArrayCSV(file) {
+    generateArrayCSV(file, fileName) {
       const csv = file.replace(/\r/g, ""); //Serve para o \r que tem em string no js
       const lines = csv.split("\n");
       let csvData = [];
@@ -293,23 +312,31 @@ export default {
           if (row.length > 1) {
             csvData.push(row);
           }
-        } else {
+
+          //Insere as classes no array
+          let last = row[row.length - 1];
+          if (!this.classValues.includes(last) && last != "") {
+            this.classValues.push(row[row.length - 1]);
+          }
+        } else if (fileName === "training") {
+          this.headerClass = [];
           let row = line.split(",");
           for (let i = 0; i < row.length - 1; i++) {
             this.headerClass.push(row[i]);
           }
         }
       });
+      console.log(this.classValues);
 
       console.log(csvData);
       return csvData;
     },
     mapClass() {
-      this.class.push("CA");
-      this.class.push("CB");
-      this.class.push("CC");
-      this.class.push("CD");
-      this.class.push("CE");
+      this.classValues.push("CA");
+      this.classValues.push("CB");
+      this.classValues.push("CC");
+      this.classValues.push("CD");
+      this.classValues.push("CE");
     },
     normalize() {
       for (let j = 0; j < this.headerClass.length; j++) {
@@ -329,7 +356,7 @@ export default {
       );
     },
     trainMlpAlgorithm() {
-      this.mapClass();
+      //this.mapClass();
       for (let i = 0; i < this.camadaE; i++) {
         this.pesoEtoO.push([]);
         for (let j = 0; j < this.camadaO; j++) {
@@ -423,7 +450,8 @@ export default {
                         ));
                   }
                 }
-                let local = this.class.indexOf(this.csvTraining[i][6]) + 1;
+                let local =
+                  this.classValues.indexOf(this.csvTraining[i][6]) + 1;
                 ErroS[k] = (local - netS[k]) * 0.1;
                 ErroRede = ErroRede + Math.pow(local, 2) - IG[k];
                 console.log("ErroS", local, netS, ErroS[k]);
@@ -478,6 +506,10 @@ export default {
 </script>
 
 <style scoped>
+.container--mat {
+  background: #ffffff;
+  border-radius: 10px;
+}
 .disabled {
   background: rgb(201, 207, 211);
 }
