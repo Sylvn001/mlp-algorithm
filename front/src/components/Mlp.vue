@@ -222,19 +222,30 @@
       <!-- Confusion matriz -->
       <div class="container--mat">
         <table class="table">
-          <thead class="thead-light">
+          <thead class="table-dark">
             <tr>
               <th scope="col"></th>
               <th v-for="classInfo in classValues" :key="classInfo" scope="col">
                 {{ classInfo }}
               </th>
-              <th>Accuracia total!</th>
+              <th>Acurácia Total (%)</th>
             </tr>
           </thead>
           <tbody>
-            <tr></tr>
+            <tr v-for="(line, lineIndex) in confusionMat" :key="lineIndex">
+              <td
+                :class="{
+                  accuracy: lineIndex + 1 == colIndex,
+                }"
+                v-for="(col, colIndex) in line.length"
+                :key="colIndex"
+              >
+                {{ line[col - 1] }}
+              </td>
+            </tr>
             <tr>
-
+              <td class="text-end">Acurácia total</td>
+              <td class="text-center">85%</td>
             </tr>
           </tbody>
         </table>
@@ -264,8 +275,15 @@ export default {
       iteracoes: 2,
       txAprendizado: 0.2,
       csvTraining: [],
-      classValues: [],
-      // classValues: ["CA", "CB", "CC", "CD", "CE"],
+      // classValues: [],
+      classValues: ["CA", "CB", "CC", "CD", "CE"],
+      confusionMat: [
+        ["CA", 56, 0, 0, 0, 0, 100],
+        ["CB", 0, 53, 0, 0, 0, 100],
+        ["CC", 0, 0, 102, 0, 0, 100],
+        ["CD", 0, 0, 0, 75, 0, 100],
+        ["CE", 0, 0, 0, 0, 66, 100],
+      ],
       csvTest: [],
       pesoEtoO: [],
       pesoOtoS: [],
@@ -364,7 +382,7 @@ export default {
       for (let i = 0; i < this.camadaE; i++) {
         pesoEtoO[i] = [];
         for (let j = 0; j < this.camadaO; j++) {
-          let peso = Math.random()* 2 * (Math.round(Math.random()) ? 1 : -1);
+          let peso = Math.random() * 2 * (Math.round(Math.random()) ? 1 : -1);
           pesoEtoO[i][j] = peso;
         }
       }
@@ -372,7 +390,7 @@ export default {
       for (let i = 0; i < this.camadaO; i++) {
         pesoOtoS[i] = [];
         for (let j = 0; j < this.camadaS; j++) {
-          let peso = Math.random()* 2 * (Math.round(Math.random()) ? 1 : -1);
+          let peso = Math.random() * 2 * (Math.round(Math.random()) ? 1 : -1);
           pesoOtoS[i][j] = peso;
         }
       }
@@ -394,19 +412,13 @@ export default {
           for (let i = 0; i < this.csvTraining.length; i++) {
             let saidas = [];
             let local = this.classValues.indexOf(this.csvTraining[i][6]);
-            for(let j = 0; j < this.camadaS; j++)
-            {
-              if(j == local)
-              {
+            for (let j = 0; j < this.camadaS; j++) {
+              if (j == local) {
                 saidas[j] = 1;
-              }
-              else
-              {
-                if(this.funcao == 3)
-                {
+              } else {
+                if (this.funcao == 3) {
                   saidas[j] = -1;
-                }
-                else{
+                } else {
                   saidas[j] = 0;
                 }
               }
@@ -422,7 +434,8 @@ export default {
               for (let k = 0; k < this.camadaO; k++) {
                 net.push(0);
                 for (let l = 0; l < this.camadaE; l++) {
-                  net[k] += this.retornaValorNomalizado(this.csvTraining[i][j], j) *
+                  net[k] +=
+                    this.retornaValorNomalizado(this.csvTraining[i][j], j) *
                     pesoEtoO[l][k];
                 }
                 if (this.funcao == 1) {
@@ -471,7 +484,7 @@ export default {
                 }
 
                 ErroS[k] = (saidas[k] - IG[k]) * 0.1;
-                ErroRede = ErroRede + Math.pow((saidas[k]- IG[k]), 2);
+                ErroRede = ErroRede + Math.pow(saidas[k] - IG[k], 2);
               }
               ErroRede = ErroRede * 0.5;
               for (let pos = 0; pos < this.camadaO; pos++) {
@@ -485,8 +498,14 @@ export default {
 
               for (let l = 0; l < this.camadaS; l++) {
                 for (let k = 0; k < this.camadaO; k++) {
-                  console.log(pesoOtoS[k][l], this.txAprendizado, ErroS[l], IC[k]);
-                  let calc = parseFloat(pesoOtoS[k][l]) +
+                  console.log(
+                    pesoOtoS[k][l],
+                    this.txAprendizado,
+                    ErroS[l],
+                    IC[k]
+                  );
+                  let calc =
+                    parseFloat(pesoOtoS[k][l]) +
                     parseFloat(this.txAprendizado * ErroS[l] * IC[k]);
                   pesoOtoS[k][l] = calc;
                 }
@@ -494,7 +513,8 @@ export default {
 
               for (let l = 0; l < this.camadaO; l++) {
                 for (let k = 0; k < this.camadaE; k++) {
-                  pesoEtoO[k][l] = parseFloat(pesoEtoO[k][l]) +
+                  pesoEtoO[k][l] =
+                    parseFloat(pesoEtoO[k][l]) +
                     parseFloat(
                       this.txAprendizado * Erro[l] * this.csvTraining[i][j]
                     );
@@ -513,13 +533,11 @@ export default {
       this.pesoEtoO = pesoEtoO;
       console.log(this.pesoEtoO, this.pesoOtoS);
     },
-    criaMatriz(){
-      let matriz = []
-      for(let i = 0; i < this.classValues.length; i ++)
-      {
+    criaMatriz() {
+      let matriz = [];
+      for (let i = 0; i < this.classValues.length; i++) {
         matriz[i] = [];
-        for(let j = 0; j < this.classValues.length; j ++)
-        {
+        for (let j = 0; j < this.classValues.length; j++) {
           matriz[i][j] = 0;
         }
       }
@@ -532,19 +550,13 @@ export default {
       for (let i = 0; i < this.csvTraining.length; i++) {
         let saidas = [];
         let local = this.classValues.indexOf(this.csvTraining[i][6]);
-        for(let j = 0; j < this.camadaS; j++)
-        {
-          if(j == local)
-          {
+        for (let j = 0; j < this.camadaS; j++) {
+          if (j == local) {
             saidas[j] = 1;
-          }
-          else
-          {
-            if(this.funcao == 3)
-            {
+          } else {
+            if (this.funcao == 3) {
               saidas[j] = -1;
-            }
-            else{
+            } else {
               saidas[j] = 0;
             }
           }
@@ -559,7 +571,8 @@ export default {
           for (let k = 0; k < this.camadaO; k++) {
             net.push(0);
             for (let l = 0; l < this.camadaE; l++) {
-              net[k] += this.retornaValorNomalizado(this.csvTraining[i][j], j) *
+              net[k] +=
+                this.retornaValorNomalizado(this.csvTraining[i][j], j) *
                 this.pesoEtoO[l][k];
             }
             if (this.funcao == 1) {
@@ -570,10 +583,7 @@ export default {
                   1 /
                   (1 +
                     Math.pow(
-                      this.retornaValorNomalizado(
-                        this.csvTraining[i][j],
-                        j
-                      ),
+                      this.retornaValorNomalizado(this.csvTraining[i][j], j),
                       net[k]
                     ));
               }
@@ -593,7 +603,13 @@ export default {
               IG.push(netS[k] / 10);
             } else {
               if (this.funcao == 2) {
-                IG[k] = 1 / (1 + Math.pow( this.retornaValorNomalizado(this.csvTraining[i][j], j), netS[k]));
+                IG[k] =
+                  1 /
+                  (1 +
+                    Math.pow(
+                      this.retornaValorNomalizado(this.csvTraining[i][j], j),
+                      netS[k]
+                    ));
               }
             }
           }
@@ -608,6 +624,7 @@ export default {
 .container--mat {
   background: #ffffff;
   border-radius: 10px;
+  bottom: 2rem;
 }
 .disabled {
   background: rgb(201, 207, 211);
@@ -637,5 +654,9 @@ export default {
 .btn-size {
   width: 50%;
   margin: 0 auto;
+}
+
+.accuracy {
+  background: rgb(66, 191, 66);
 }
 </style>
