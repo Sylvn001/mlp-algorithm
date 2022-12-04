@@ -47,6 +47,9 @@
               <input
                 class="form-control"
                 v-model="erro"
+                min="0"
+                max="1"
+                type="number"
                 :disabled="block"
                 :class="{ disabled: block }"
               />
@@ -57,6 +60,7 @@
             <label class="col-4">Iterações: </label>
             <div class="col-4">
               <input
+                type="number"
                 class="form-control"
                 v-model="iteracoes"
                 :disabled="block"
@@ -66,11 +70,14 @@
           </div>
 
           <div class="row mt-2">
-            <label class="col-4">N: </label>
+            <label class="col-4">Taxa de aprendizado: </label>
             <div class="col-4">
               <input
                 class="form-control"
-                v-model="n"
+                v-model="txAprendizado"
+                type="number"
+                min="0"
+                max="1"
                 :disabled="block"
                 :class="{ disabled: block }"
               />
@@ -89,9 +96,26 @@
                 :class="{ disabled: block }"
                 id="funcao"
               >
-                <option value="1">hiperbolica</option>
-                <option value="2">linear</option>
+                <option value="1">Linear</option>
+                <option value="2">Logística</option>
+                <option value="3">Tam hiperbolica</option>
               </select>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <label for="funcao" class="col-4">Classes de Treinamento </label>
+            <div class="d-flex col-6">
+              <div v-for="(testCLass, index) in headerClass" :key="index">
+                <label class="form-check-label" for="flexCheckIndeterminate">
+                  {{ testCLass }}
+                </label>
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  id="flexCheckIndeterminate"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -113,12 +137,13 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">x1</th>
-                <th scope="col">x2</th>
-                <th scope="col">x3</th>
-                <th scope="col">x4</th>
-                <th scope="col">x5</th>
-                <th scope="col">x6</th>
+                <th
+                  v-for="(hclass, index) in this.headerClass"
+                  :key="index"
+                  scope="col"
+                >
+                  {{ hclass }}
+                </th>
                 <th scope="col">Classe</th>
               </tr>
             </thead>
@@ -159,12 +184,13 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">x1</th>
-                <th scope="col">x2</th>
-                <th scope="col">x3</th>
-                <th scope="col">x4</th>
-                <th scope="col">x5</th>
-                <th scope="col">x6</th>
+                <th
+                  v-for="(hclass, index) in this.headerClass"
+                  :key="index"
+                  scope="col"
+                >
+                  {{ hclass }}
+                </th>
                 <th scope="col">Classe</th>
               </tr>
             </thead>
@@ -206,17 +232,34 @@ export default {
   },
   data() {
     return {
+      headerClass: [],
+      // headerClass: ["x1", "x2", "x3", "x4", "x5", "x6"],
       funcao: 1,
       camadaE: 6,
       camadaS: 5,
       camadaO: 1,
       erro: 0.00001,
-      iteracoes: 2000,
-      n: 0.2,
+      iteracoes: 2,
+      txAprendizado: 0.2,
       csvTraining: [],
+      class: [],
       csvTest: [],
+      pesoEtoO: [],
+      pesoOtoS: [],
       block: false,
+      normalized: [],
     };
+  },
+  watch: {
+    txAprendizado() {
+      this.txAprendizado = parseFloat(this.txAprendizado);
+    },
+    erro() {
+      this.erro = parseFloat(this.erro);
+    },
+    iteracoes(value) {
+      this.iteracoes = parseInt(this.iteracoes);
+    },
   },
 
   methods: {
@@ -250,16 +293,179 @@ export default {
           if (row.length > 1) {
             csvData.push(row);
           }
+        } else {
+          let row = line.split(",");
+          for (let i = 0; i < row.length - 1; i++) {
+            this.headerClass.push(row[i]);
+          }
         }
       });
 
       console.log(csvData);
       return csvData;
     },
+    mapClass() {
+      this.class.push("CA");
+      this.class.push("CB");
+      this.class.push("CC");
+      this.class.push("CD");
+      this.class.push("CE");
+    },
+    normalize() {
+      for (let j = 0; j < this.headerClass.length; j++) {
+        this.normalized.push([this.csvTraining[0][j], this.csvTraining[0][j]]);
+        for (let i = 1; i < this.csvTraining.length; i++) {
+          if (this.csvTraining[i][j] > this.normalized[j][0])
+            this.normalized[j][0] = this.csvTraining[i][j];
+          if (this.csvTraining[i][j] < this.normalized[j][1])
+            this.normalized[j][1] = this.csvTraining[i][j];
+        }
+      }
+    },
+    retornaValorNomalizado(valor, pos) {
+      return (
+        (valor - this.normalized[pos][1]) / this.normalized[pos][0] -
+        this.normalized[pos][1]
+      );
+    },
     trainMlpAlgorithm() {
+      this.mapClass();
+      for (let i = 0; i < this.camadaE; i++) {
+        this.pesoEtoO.push([]);
+        for (let j = 0; j < this.camadaO; j++) {
+          this.pesoEtoO[i].push((Math.random() * (2 - 0) + 0).toFixed(2));
+        }
+      }
+
+      for (let i = 0; i < this.camadaO; i++) {
+        this.pesoOtoS.push([]);
+        for (let j = 0; j < this.camadaS; j++) {
+          this.pesoOtoS[i].push((Math.random() * (2 - 0) + 0).toFixed(2));
+        }
+      }
+
       if (this.csvTraining.length > 0) {
+        this.normalize();
+        console.log(this.normalized);
         this.block = true;
         alert("treinando");
+        let flag = true;
+        let count = 0;
+        while (flag) {
+          count++;
+          let net = [];
+          let netS = [];
+          let IC = [];
+          let IG = [];
+          let Erro = [];
+          let ErroS = [];
+          let ErroRede = 0;
+          for (let i = 0; i < this.csvTraining.length; i++) {
+            for (let j = 0; j < this.headerClass.length; j++) {
+              ErroRede = 0;
+              ErroS = [];
+              net = [];
+              netS = [];
+              IC = [];
+              IG = [];
+              for (let k = 0; k < this.camadaO; k++) {
+                net.push(0);
+                for (let l = 0; l < this.camadaE; l++) {
+                  console.log(
+                    "normalizado",
+                    this.retornaValorNomalizado(this.csvTraining[i][j])
+                  );
+                  net[k] +=
+                    this.retornaValorNomalizado(this.csvTraining[i][j], j) *
+                    this.pesoEtoO[l][k];
+                  //console.log("dados",i, j, this.csvTraining[i][j], this.pesoEtoO[l][k]);
+                }
+                if (this.funcao == 1) {
+                  IC[k] = net[k] / 10;
+                } else {
+                  if (this.funcao == 2) {
+                    IC[k] =
+                      1 /
+                      (1 +
+                        Math.pow(
+                          this.retornaValorNomalizado(
+                            this.csvTraining[i][j],
+                            j
+                          ),
+                          net[k]
+                        ));
+                  }
+                  // else{
+
+                  // }
+                }
+              }
+
+              /////////////////////////////////////////////////////////////////////////////////////////
+              for (let k = 0; k < this.camadaS; k++) {
+                netS.push(0);
+                for (let l = 0; l < this.camadaO; l++) {
+                  netS[k] += IC[l] * parseFloat(this.pesoOtoS[l][k]);
+                }
+                if (this.funcao == 1) {
+                  IG.push(net[k] / 10);
+                } else {
+                  if (this.funcao == 2) {
+                    IG[k] =
+                      1 /
+                      (1 +
+                        Math.pow(
+                          this.retornaValorNomalizado(
+                            this.csvTraining[i][j],
+                            j
+                          ),
+                          netS[k]
+                        ));
+                  }
+                }
+                let local = this.class.indexOf(this.csvTraining[i][6]) + 1;
+                ErroS[k] = (local - netS[k]) * 0.1;
+                ErroRede = ErroRede + Math.pow(local, 2) - IG[k];
+                console.log("ErroS", local, netS, ErroS[k]);
+              }
+              ErroRede = ErroRede * 0.5;
+              Erro = [];
+              for (let pos = 0; pos < this.camadaO; pos++) {
+                Erro.push(0);
+                for (let k = 0; k < this.camadaS; k++) {
+                  Erro[pos] =
+                    Erro[pos] +
+                    Math.pow(ErroS[k] * parseFloat(this.pesoOtoS[pos][k]), 2);
+                  //console.log("calc", ErroS[k], this.pesoOtoS[pos][k])
+                }
+                Erro[pos] = Erro[pos] * 0.1;
+              }
+              console.log("Erro", Erro);
+              for (let l = 0; l < this.camadaS; l++) {
+                for (let k = 0; k < this.camadaO; k++) {
+                  //console.log("Peso O para S",this.pesoOtoS[k][l], this.txAprendizado, ErroS[l], IC[k]);
+                  this.pesoOtoS[k][l] =
+                    parseFloat(this.pesoOtoS[k][l]) +
+                    parseFloat(this.txAprendizado * ErroS[l] * IC[k]);
+                }
+              }
+
+              for (let l = 0; l < this.camadaO; l++) {
+                for (let k = 0; k < this.camadaE; k++) {
+                  //console.log("Peso E para O", this.pesoEtoO[k][l], this.txAprendizado, Erro[l], this.csvTraining[i][j])
+                  this.pesoEtoO[k][l] =
+                    parseFloat(this.pesoEtoO[k][l]) +
+                    parseFloat(
+                      this.txAprendizado * Erro[l] * this.csvTraining[i][j]
+                    );
+                }
+              }
+            }
+          }
+          if (ErroRede <= this.erro || count >= this.iteracoes) {
+            flag = false;
+          }
+        }
       } else {
         alert("vazio");
       }
