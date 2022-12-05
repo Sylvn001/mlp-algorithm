@@ -277,13 +277,14 @@ export default {
       csvTraining: [],
       // classValues: [],
       classValues: ["CA", "CB", "CC", "CD", "CE"],
-      confusionMat: [
-        ["CA", 56, 0, 0, 0, 0, 100],
-        ["CB", 0, 53, 0, 0, 0, 100],
-        ["CC", 0, 0, 102, 0, 0, 100],
-        ["CD", 0, 0, 0, 75, 0, 100],
-        ["CE", 0, 0, 0, 0, 66, 100],
-      ],
+      // confusionMat: [
+      //   ["CA", 0, 0, 0, 0, 0, 100],
+      //   ["CB", 0, 0, 0, 0, 0, 100],
+      //   ["CC", 0, 0, 0, 0, 0, 100],
+      //   ["CD", 0, 0, 0, 0, 0, 100],
+      //   ["CE", 0, 0, 0, 0, 0, 100],
+      // ],
+      confusionMat: [],
       csvTest: [],
       pesoEtoO: [],
       pesoOtoS: [],
@@ -398,11 +399,21 @@ export default {
         return Math.tanh(net);
       }
     },
-    trainMlpAlgorithm()
-    {
+    trainMlpAlgorithm() {
       if (this.csvTraining.length > 0) {
         this.block = true;
-        let classe = new  mlp(this.funcao, this.camadaE, this.camadaO, this.camadaS, this.erro, this.iteracoes, this.txAprendizado, this.csvTraining, this.classValues, this.headerClass);
+        let classe = new mlp(
+          this.funcao,
+          this.camadaE,
+          this.camadaO,
+          this.camadaS,
+          this.erro,
+          this.iteracoes,
+          this.txAprendizado,
+          this.csvTraining,
+          this.classValues,
+          this.headerClass
+        );
         let retorno = classe.treinar();
         this.pesoEtoO = retorno[0];
         this.pesoOtoS = retorno[1];
@@ -550,25 +561,37 @@ export default {
           matriz[i][j] = 0;
         }
       }
+      return matriz;
     },
     testMlpAlgorithm() {
-      let classe = new  mlp(this.funcao, this.camadaE, this.camadaO, this.camadaS, this.erro, this.iteracoes, this.txAprendizado, this.csvTraining, this.classValues, this.headerClass, this.csvTest);
+      this.confusionMat = this.criaMatriz();
+
+      let classe = new mlp(
+        this.funcao,
+        this.camadaE,
+        this.camadaO,
+        this.camadaS,
+        this.erro,
+        this.iteracoes,
+        this.txAprendizado,
+        this.csvTraining,
+        this.classValues,
+        this.headerClass,
+        this.csvTest
+      );
       let retorno = classe.testar(this.pesoEtoO, this.pesoOtoS);
       console.log(retorno);
-      for(let i = 0; i< this.classValues.length ; i++)
-      {
+      for (let i = 0; i < this.classValues.length; i++) {
         let total = 0;
         let acertos = 0;
-        for(let j = 0; j< this.classValues.length; j++)
-        {
-          total += retorno[i][j]
-          if(i == j)
-          {
+        for (let j = 0; j < this.classValues.length; j++) {
+          total += retorno[i][j];
+          if (i == j) {
             acertos = retorno[i][j];
           }
-          this.confusionMat[i][j+1] = retorno[i][j];
+          this.confusionMat[i][j + 1] = retorno[i][j];
         }
-        this.confusionMat[i][6] = acertos/total*100;
+        this.confusionMat[i][6] = (acertos / total) * 100;
       }
       console.log(this.confusionMat);
     },
