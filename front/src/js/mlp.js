@@ -21,6 +21,8 @@ class mlp {
   acertos;
   erros;
   epocas;
+  historicoErro;
+  historicoEpoca;
   constructor(
     funcao,
     camadaE,
@@ -54,6 +56,8 @@ class mlp {
     this.acertos = 0;
     this.erros = 0;
     this.epocas = 0;
+    this.historicoEpoca = [];
+    this.historicoErro = [];
   }
   treinar() {
     for (let i = 0; i < this.camadaE; i++) {
@@ -78,6 +82,7 @@ class mlp {
       let count = 0;
       while (flag) {
         this.epocas++;
+        this.historicoEpoca.push(this.epocas);
         let ErroRede = 0;
         this.neuronOculto = [];
         this.neuronSaida = [];
@@ -108,11 +113,8 @@ class mlp {
           this.atualizaPesoOculta(i);
           ErroEpoca += ErroRede;
         }
-
-        if (
-          (ErroEpoca / this.csvTraining.length).toFixed(5) <= this.erro ||
-          count >= this.iteracoes
-        ) {
+        this.historicoErro.push(ErroEpoca/this.csvTraining.length);
+        if ((ErroEpoca / this.csvTraining.length).toFixed(5) <= this.erro || count >= this.iteracoes) {
           flag = false;
         }
       }
@@ -120,7 +122,7 @@ class mlp {
       alert("vazio");
     }
     console.log("Epocas: " + this.epocas);
-    return [this.pesoEtoO, this.pesoOtoS];
+    return [this.pesoEtoO, this.pesoOtoS, this.historicoEpoca, this.historicoErro];
   }
 
   normalize() {

@@ -42,6 +42,10 @@ export default {
     LineChartGenerator,
   },
   props: {
+    chartData: {
+      type: Object,
+      default: null
+    },
     chartId: {
       type: String,
       default: "line-chart",
@@ -73,24 +77,24 @@ export default {
   },
   data() {
     return {
-      chartData: {
-        labels: [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-        ],
-        datasets: [
-          {
-            label: "Erro",
-            backgroundColor: "#e17279",
-            data: [40],
-          },
-        ],
-      },
+      // chartData: {
+      //   labels: [
+      //     "January",
+      //     "February",
+      //     "March",
+      //     "April",
+      //     "May",
+      //     "June",
+      //     "July",
+      //   ],
+      //   datasets: [
+      //     {
+      //       label: "Erro",
+      //       backgroundColor: "#e17279",
+      //       data: [40],
+      //     },
+      //   ],
+      // },
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,

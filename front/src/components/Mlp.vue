@@ -169,7 +169,7 @@
       </div>
 
       <div class="mt-4 container--chart rounded p-4">
-        <LineChart />
+        <LineChart :chart-data="this.chartData" />
       </div>
 
       <div class="mt-4 csv--content rounded p-2">
@@ -282,6 +282,7 @@ export default {
       pesoOtoS: [],
       block: false,
       normalized: [],
+      chartData: {},
     };
   },
   watch: {
@@ -409,6 +410,16 @@ export default {
         let retorno = classe.treinar();
         this.pesoEtoO = retorno[0];
         this.pesoOtoS = retorno[1];
+        this.chartData = {
+          labels: retorno[2],
+          datasets: [
+            {
+              label: "Erro",
+              backgroundColor: "#e17279",
+              data: retorno[3],
+            },
+          ],
+        }
         console.log(this.pesoEtoO, this.pesoOtoS);
       }
     },
