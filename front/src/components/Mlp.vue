@@ -557,7 +557,8 @@ export default {
       let matriz = [];
       for (let i = 0; i < this.classValues.length; i++) {
         matriz[i] = [];
-        for (let j = 0; j < this.classValues.length; j++) {
+        matriz[i][0] = this.classValues[i];
+        for (let j = 1; j < this.classValues.length + 2; j++) {
           matriz[i][j] = 0;
         }
       }
