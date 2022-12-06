@@ -79,7 +79,6 @@ class mlp {
     if (this.csvTraining.length > 0) {
       this.normalize();
       let flag = true;
-      let count = 0;
       while (flag) {
         this.epocas++;
         this.historicoEpoca.push(this.epocas);
@@ -89,7 +88,6 @@ class mlp {
         this.criarNeuronios();
         let ErroEpoca = 0;
         for (let i = 0; i < this.csvTraining.length; i++) {
-          count++;
           this.saidas = [];
           let local = this.classValues.indexOf(this.csvTraining[i][6]);
           for (let j = 0; j < this.camadaS; j++) {
@@ -113,8 +111,11 @@ class mlp {
           this.atualizaPesoOculta(i);
           ErroEpoca += ErroRede;
         }
-        this.historicoErro.push(ErroEpoca/this.csvTraining.length);
-        if ((ErroEpoca / this.csvTraining.length).toFixed(5) <= this.erro || count >= this.iteracoes) {
+        this.historicoErro.push(ErroEpoca / this.csvTraining.length);
+        if (
+          (ErroEpoca / this.csvTraining.length).toFixed(5) <= this.erro ||
+          this.epocas >= this.iteracoes
+        ) {
           flag = false;
         }
       }
@@ -122,7 +123,12 @@ class mlp {
       alert("vazio");
     }
     console.log("Epocas: " + this.epocas);
-    return [this.pesoEtoO, this.pesoOtoS, this.historicoEpoca, this.historicoErro];
+    return [
+      this.pesoEtoO,
+      this.pesoOtoS,
+      this.historicoEpoca,
+      this.historicoErro,
+    ];
   }
 
   normalize() {
@@ -301,9 +307,6 @@ class mlp {
       }
     }
 
-    console.log("Matriz de confusao ---");
-    console.log(matrizConfusao);
-
     for (let i = 0; i < this.csvTest.length; i++) {
       this.saidas = [];
       let local = this.classValues.indexOf(this.csvTest[i][6]);
@@ -323,15 +326,13 @@ class mlp {
       console.log("Neuronio", this.neuronOculto, this.neuronSaida);
       matrizConfusao = this.criaMatrizConfusao(matrizConfusao, i);
     }
-    console.log("Acertos: " + this.acertos + " Erros: " + this.erros);
-    return matrizConfusao;
+    return [matrizConfusao, (this.acertos / (this.acertos + this.erros)) * 100];
   }
 
   criaMatrizConfusao(matrizConfusao, pos) {
     let maior = -99999999999;
     let obtido = 0;
     for (let i = 0; i < this.camadaS; i++) {
-      console.log("I final", this.neuronSaida[i].getI(), i);
       if (this.neuronSaida[i].getI() > maior) {
         maior = this.neuronSaida[i].getI();
         obtido = i;
@@ -344,8 +345,6 @@ class mlp {
     } else {
       this.erros++;
     }
-
-    console.log("Esperado: " + esperado, "Obtido: " + obtido);
 
     for (let i = 0; i < this.classValues.length; i++) {
       for (let j = 0; j < this.classValues.length; j++) {

@@ -245,7 +245,7 @@
             </tr>
             <tr>
               <td class="text-end">Acurácia total</td>
-              <td class="text-center">{{}}</td>
+              <td class="text-center">{{ acurracy }}</td>
             </tr>
           </tbody>
         </table>
@@ -283,6 +283,7 @@ export default {
       block: false,
       normalized: [],
       chartData: {},
+      acurracy: 0,
     };
   },
   watch: {
@@ -419,11 +420,10 @@ export default {
               data: retorno[3],
             },
           ],
-        }
+        };
         console.log(this.pesoEtoO, this.pesoOtoS);
       }
     },
-    // trainMlpAlgorithm() {
     //   let pesoEtoO = [];
     //   let pesoOtoS = [];
     //   for (let i = 0; i < this.camadaE; i++) {
@@ -584,7 +584,11 @@ export default {
         this.headerClass,
         this.csvTest
       );
-      let retorno = classe.testar(this.pesoEtoO, this.pesoOtoS);
+      let devolucao = classe.testar(this.pesoEtoO, this.pesoOtoS);
+      console.log(devolucao);
+      let retorno = devolucao[0];
+      this.acurracy = devolucao[1];
+
       console.log(retorno);
       console.log("retorno a cima");
       for (let i = 0; i < this.classValues.length; i++) {
