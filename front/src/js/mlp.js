@@ -100,7 +100,9 @@ class mlp {
           }
           ErroRede = 0;
           this.defNetIcOculta(i);
-          ErroRede = this.defNetIcErroSaida(ErroRede) * 0.5;
+          this.defNetIcSaida();
+          ErroRede = this.defErroSaida(ErroRede);
+          ErroRede = ErroRede*0.5;
           this.defErroOculta();
           this.atualizaPesoSaida();
           this.atualizaPesoOculta(i);
@@ -163,10 +165,7 @@ class mlp {
     for (let l = 0; l < this.camadaO; l++) {
       this.neuronOculto[l].setErro(0);
       for (let k = 0; k < this.camadaS; k++) {
-        this.neuronOculto[l].setErro(
-          this.neuronOculto[l].getErro() +
-            this.neuronSaida[k].getErro() * this.pesoOtoS[l][k]
-        );
+        this.neuronOculto[l].setErro(this.neuronOculto[l].getErro() + this.neuronSaida[k].getErro() * this.pesoOtoS[l][k]);
       }
       this.neuronOculto[l].setErro(
         this.aplicaDerivada(
@@ -177,7 +176,7 @@ class mlp {
     }
   }
 
-  defNetIcErroSaida(ErroRede) {
+  defNetIcSaida() {
     for (let k = 0; k < this.camadaS; k++) {
       this.neuronSaida[k].setNet(0);
       for (let l = 0; l < this.camadaO; l++) {
@@ -188,10 +187,15 @@ class mlp {
       }
 
       this.neuronSaida[k].setI(this.aplicaFT(this.neuronSaida[k].getNet()));
+    }
+  }
 
-      this.neuronSaida[k].setErro(this.aplicaDerivada(this.saidas[k] - this.neuronSaida[k].getI(), this.neuronSaida[k].getNet()));
-
-      ErroRede = ErroRede + Math.pow((this.saidas[k]-this.neuronSaida[k].getI()), 2);
+  defErroSaida(ErroRede)
+  {
+    for (let k = 0; k < this.camadaS; k++) {
+      let erro = this.saidas[k] - (this.neuronSaida[k].getI());
+      this.neuronSaida[k].setErro(this.aplicaDerivada(erro, this.neuronSaida[k].getNet()));
+      ErroRede = ErroRede + Math.pow(erro, 2);
     }
     return ErroRede;
   }
@@ -297,6 +301,7 @@ class mlp {
       }
       this.defNetIcOcultaTest(i);
       this.defNetIcSaidaTest();
+      console.log("Neuronio",this.neuronOculto, this.neuronSaida)
       matrizConfusao = this.criaMatrizConfusao(matrizConfusao, i);
     }
     console.log("Acertos: " + this.acertos + " Erros: " + this.erros);
