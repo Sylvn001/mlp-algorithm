@@ -102,15 +102,17 @@ class mlp {
           this.defNetIcOculta(i);
           this.defNetIcSaida();
           ErroRede = this.defErroSaida(ErroRede);
-          ErroRede = ErroRede*0.5;
+          ErroRede = ErroRede * 0.5;
           this.defErroOculta();
           this.atualizaPesoSaida();
           this.atualizaPesoOculta(i);
           ErroEpoca += ErroRede;
         }
 
-
-        if ((ErroEpoca / this.csvTraining.length).toFixed(5) <= this.erro ||count >= this.iteracoes) {
+        if (
+          (ErroEpoca / this.csvTraining.length).toFixed(5) <= this.erro ||
+          count >= this.iteracoes
+        ) {
           flag = false;
         }
       }
@@ -165,7 +167,10 @@ class mlp {
     for (let l = 0; l < this.camadaO; l++) {
       this.neuronOculto[l].setErro(0);
       for (let k = 0; k < this.camadaS; k++) {
-        this.neuronOculto[l].setErro(this.neuronOculto[l].getErro() + this.neuronSaida[k].getErro() * this.pesoOtoS[l][k]);
+        this.neuronOculto[l].setErro(
+          this.neuronOculto[l].getErro() +
+            this.neuronSaida[k].getErro() * this.pesoOtoS[l][k]
+        );
       }
       this.neuronOculto[l].setErro(
         this.aplicaDerivada(
@@ -190,11 +195,12 @@ class mlp {
     }
   }
 
-  defErroSaida(ErroRede)
-  {
+  defErroSaida(ErroRede) {
     for (let k = 0; k < this.camadaS; k++) {
-      let erro = this.saidas[k] - (this.neuronSaida[k].getI());
-      this.neuronSaida[k].setErro(this.aplicaDerivada(erro, this.neuronSaida[k].getNet()));
+      let erro = this.saidas[k] - this.neuronSaida[k].getI();
+      this.neuronSaida[k].setErro(
+        this.aplicaDerivada(erro, this.neuronSaida[k].getNet())
+      );
       ErroRede = ErroRede + Math.pow(erro, 2);
     }
     return ErroRede;
@@ -217,7 +223,11 @@ class mlp {
   atualizaPesoSaida() {
     for (let l = 0; l < this.camadaS; l++) {
       for (let k = 0; k < this.camadaO; k++) {
-        this.pesoOtoS[k][l] = this.pesoOtoS[k][l] + this.txAprendizado * this.neuronSaida[l].getErro() * this.neuronOculto[k].getI();
+        this.pesoOtoS[k][l] =
+          this.pesoOtoS[k][l] +
+          this.txAprendizado *
+            this.neuronSaida[l].getErro() *
+            this.neuronOculto[k].getI();
       }
     }
   }
@@ -225,7 +235,11 @@ class mlp {
   atualizaPesoOculta(i) {
     for (let l = 0; l < this.camadaO; l++) {
       for (let k = 0; k < this.camadaE; k++) {
-        this.pesoEtoO[k][l] = this.pesoEtoO[k][l] + this.txAprendizado * this.neuronOculto[l].getErro() * this.retornaValorNomalizado(this.csvTraining[i][k], k);
+        this.pesoEtoO[k][l] =
+          this.pesoEtoO[k][l] +
+          this.txAprendizado *
+            this.neuronOculto[l].getErro() *
+            this.retornaValorNomalizado(this.csvTraining[i][k], k);
       }
     }
   }
@@ -285,6 +299,9 @@ class mlp {
       }
     }
 
+    console.log("Matriz de confusao ---");
+    console.log(matrizConfusao);
+
     for (let i = 0; i < this.csvTest.length; i++) {
       this.saidas = [];
       let local = this.classValues.indexOf(this.csvTest[i][6]);
@@ -301,7 +318,7 @@ class mlp {
       }
       this.defNetIcOcultaTest(i);
       this.defNetIcSaidaTest();
-      console.log("Neuronio",this.neuronOculto, this.neuronSaida)
+      console.log("Neuronio", this.neuronOculto, this.neuronSaida);
       matrizConfusao = this.criaMatrizConfusao(matrizConfusao, i);
     }
     console.log("Acertos: " + this.acertos + " Erros: " + this.erros);
@@ -320,8 +337,11 @@ class mlp {
     }
     let esperado = this.classValues.indexOf(this.csvTest[pos][6]);
 
-    if (obtido == esperado) this.acertos++;
-    else this.erros++;
+    if (obtido == esperado) {
+      this.acertos++;
+    } else {
+      this.erros++;
+    }
 
     console.log("Esperado: " + esperado, "Obtido: " + obtido);
 

@@ -168,6 +168,10 @@
         </div>
       </div>
 
+      <div class="mt-4 container--chart rounded p-4">
+        <LineChart />
+      </div>
+
       <div class="mt-4 csv--content rounded p-2">
         <div class="col-5 my-2">
           <input
@@ -215,12 +219,8 @@
         </div>
       </div>
 
-      <div class="mt-4 container--chart rounded p-4">
-        <LineChart />
-      </div>
-
       <!-- Confusion matriz -->
-      <div class="container--mat">
+      <div v-if="showTable" class="container--mat">
         <table class="table">
           <thead class="table-dark">
             <tr>
@@ -245,7 +245,7 @@
             </tr>
             <tr>
               <td class="text-end">Acurácia total</td>
-              <td class="text-center">85%</td>
+              <td class="text-center">{{}}</td>
             </tr>
           </tbody>
         </table>
@@ -265,8 +265,8 @@ export default {
   },
   data() {
     return {
+      showTable: false,
       headerClass: [],
-      // headerClass: ["x1", "x2", "x3", "x4", "x5", "x6"],
       funcao: 1,
       camadaE: 6,
       camadaS: 5,
@@ -275,15 +275,7 @@ export default {
       iteracoes: 20000,
       txAprendizado: 0.2,
       csvTraining: [],
-      // classValues: [],
-      classValues: ["CA", "CB", "CC", "CD", "CE"],
-      // confusionMat: [
-      //   ["CA", 0, 0, 0, 0, 0, 100],
-      //   ["CB", 0, 0, 0, 0, 0, 100],
-      //   ["CC", 0, 0, 0, 0, 0, 100],
-      //   ["CD", 0, 0, 0, 0, 0, 100],
-      //   ["CE", 0, 0, 0, 0, 0, 100],
-      // ],
+      classValues: [],
       confusionMat: [],
       csvTest: [],
       pesoEtoO: [],
@@ -565,6 +557,7 @@ export default {
       return matriz;
     },
     testMlpAlgorithm() {
+      this.showTable = true;
       this.confusionMat = this.criaMatriz();
 
       let classe = new mlp(
@@ -582,6 +575,7 @@ export default {
       );
       let retorno = classe.testar(this.pesoEtoO, this.pesoOtoS);
       console.log(retorno);
+      console.log("retorno a cima");
       for (let i = 0; i < this.classValues.length; i++) {
         let total = 0;
         let acertos = 0;
@@ -594,6 +588,7 @@ export default {
         }
         this.confusionMat[i][6] = (acertos / total) * 100;
       }
+      console.log("gerado");
       console.log(this.confusionMat);
     },
   },
@@ -605,6 +600,7 @@ export default {
   background: #ffffff;
   border-radius: 10px;
   bottom: 2rem;
+  margin-top: 1rem;
 }
 .disabled {
   background: rgb(201, 207, 211);
